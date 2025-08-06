@@ -1,1 +1,79 @@
+***Fruits Into Baskets III***
+You are given two arrays of integers, fruits and baskets, each of length n, where fruits[i] represents the quantity of the ith type of fruit, and baskets[j] represents the capacity of the jth basket.
+From left to right, place the fruits according to these rules:
+1.Each fruit type must be placed in the leftmost available basket with a capacity greater than or equal to the quantity of that fruit type.
+2.Each basket can hold only one type of fruit.
+3.If a fruit type cannot be placed in any basket, it remains unplaced.
+Return the number of fruit types that remain unplaced after all possible allocations are made.
+***Example 1:***
+Input: fruits = [4,2,5], baskets = [3,5,4]
+Output: 1
+***Explanation:***
+fruits[0] = 4 is placed in baskets[1] = 5.
+fruits[1] = 2 is placed in baskets[0] = 3.
+fruits[2] = 5 cannot be placed in baskets[2] = 4.
+Since one fruit type remains unplaced, we return 1.
 
+***APPROACH***
+This problem is related to segment trees. I learned about it by solving this problem itself.
+First of All we use a tree to organise the baskets[] elements. We arrange them like:
+--> placing all the elements as leaf nodes.
+--> We take max of two leaf node and make that max as their parent, likewise we do that for all remaining elements, finally it will look like Reverse sorted tree with duplicate elements.
+--> Now we traverse each fruit through that tree and traverse it till the leaf node, if that fruit is > than any node, then we return false; since all the large elements are at top.
+--> Finally in the main funtion, we run for each loop on the fruits[] and check each fruit can be placed or not. If can't be placed, we count it. In the end we return that count.
+
+***SOLUTION***
+class Solution {
+    class SegmentTree{
+        int[] max;
+        public SegmentTree(int[] baskets){
+            int n = baskets.length;
+            this.max = new int[4*n];
+            buildTree(1, 0, n-1, baskets);
+        }
+
+        public void buildTree(int treeIdx, int left, int right, int[] baskets){
+            if(left == right){
+                max[treeIdx] = baskets[left];
+                return;
+            }
+
+            int mid = left + (right - left ) / 2;
+            buildTree(treeIdx*2, left, mid, baskets);
+            buildTree(2*treeIdx+1, mid+1, right, baskets);
+            updateParent(treeIdx);
+        }
+
+        public void updateParent(int treeIdx){
+            max[treeIdx] = Math.max(max[treeIdx*2], max[2*treeIdx+1]);
+        }
+
+        public boolean placed(int treeIdx, int left, int right, int size){
+            if(max[treeIdx] < size) return false;
+            if(left == right){
+                max[treeIdx] = -1;
+                return true;
+            }
+
+            int mid = left + (right - left) /2;
+            boolean place = placed(treeIdx*2, left, mid, size);
+            if(!place){
+                place = placed(2*treeIdx+1, mid+1, right, size);
+                updateParent(treeIdx);
+            }
+            return place;
+        }
+
+    }
+    public int numOfUnplacedFruits(int[] fruits, int[] baskets) {
+        SegmentTree tree = new SegmentTree(baskets);
+        int result = 0;
+        for(int fruit : fruits){
+            if(!tree.placed(1, 0, fruits.length-1, fruit)){
+                result++;
+            }
+        }
+
+        return result;
+    }
+}
