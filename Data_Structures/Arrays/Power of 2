@@ -1,1 +1,7 @@
+This is the simple way to find if a number is Power of 2 or not..
+this is using bitwise operation...
+Give : n = 16;
+***CODE***
 
+if((n & (n-1)) == 0) return true;//power of 2
+else return false; //not a power of 2
